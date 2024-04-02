@@ -20,6 +20,26 @@ class ProductManager {
         this.products.push(product)
     }
 
+    updateProduct(id, updatedFields) {
+        const productIndex = this.products.findIndex((p) => p.id === id);
+        if (productIndex !== -1) {
+            const updatedProduct = { ...this.products[productIndex], ...updatedFields };
+            this.products[productIndex] = updatedProduct;
+        } else {
+            console.log("Error: Producto no encontrado");
+        }
+    }
+
+    deleteProduct(id) {
+        const productIndex = this.products.findIndex((p) => p.id === id);
+        if (productIndex !== -1) {
+            this.products.splice(productIndex, 1);
+            console.log("Producto eliminado correctamente");
+        } else {
+            console.log("Error: Producto no encontrado");
+        }
+    }
+
     getProducts() {
         return this.products
     }
@@ -49,7 +69,7 @@ class ProductManager {
     }
 }
 
-const productManager = new ProductManager()
+const productManager = new ProductManager();
 
 productManager.addProduct({
     title: "notebook",
@@ -58,7 +78,7 @@ productManager.addProduct({
     thumbnail: 'ruta/imagen1.jpg',
     code: 'P001',
     stock: 2
-})
+});
 
 
 productManager.addProduct({
@@ -68,7 +88,7 @@ productManager.addProduct({
     thumbnail: 'ruta/imagen2.jpg',
     code: 'P002',
     stock: 4
-})
+});
 
 productManager.addProduct({
     title: "mouse",
@@ -77,10 +97,18 @@ productManager.addProduct({
     thumbnail: 'ruta/imagen3.jpg',
     code: 'P004',
     stock: 4
-})
+});
+
+productManager.updateProduct(2,{
+    description: "descripcion actualizada",
+    price: 3333333.3,
+    stock: 1
+});
+productManager.deleteProduct(1);
+const productos = productManager.getProducts();
 
 
-const productos = productManager.getProducts()
-const producto = productManager.getProductById()
 
-console.log(producto)
+
+console.log(productos);
+
