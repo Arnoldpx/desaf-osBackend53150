@@ -1,8 +1,9 @@
 const fs = require('fs').promises;
+const path = require('path');
 
 class ProductManager {
-    constructor() {
-        this.fileName = 'productos.json';
+    constructor(filePath) {
+        this.fileName = filePath;
         this.products = [];
     }
 
@@ -10,18 +11,17 @@ class ProductManager {
         try {
             const data = await fs.readFile(this.fileName, 'utf-8');
             this.products = JSON.parse(data);
-            console.log("Productos cargados correctamente desde el archivo:", this.fileName);
         } catch (error) {
-            console.error("Error al cargar productos desde el archivo:", error);
+            throw new Error("Error al cargar productos desde el archivo: " + error.message);
         }
     }
+    
 
     async saveToFile() {
         try {
             await fs.writeFile(this.fileName, JSON.stringify(this.products, null, 2), 'utf-8');
-            console.log("Productos guardados correctamente en el archivo:", this.fileName);
         } catch (error) {
-            console.error("Error al guardar productos en el archivo:", error);
+            throw new Error("Error al guardar productos en el archivo: " + error.message);
         }
     }
 
@@ -29,13 +29,11 @@ class ProductManager {
         try {
             await this.init();
             if (!this.isProductValid(product)) {
-                console.log("Error: El producto no es válido");
-                return;
+                throw new Error("El producto no es válido");
             }
 
             if (this.isCodeDuplicate(product.code)) {
-                console.log("Error: El código del producto ya está en uso");
-                return;
+                throw new Error("El código del producto ya está en uso");
             }
 
             const lastId = this.products.length > 0 ? this.products[this.products.length - 1].id : 0;
@@ -43,7 +41,7 @@ class ProductManager {
             this.products.push(product);
             await this.saveToFile();
         } catch (error) {
-            console.error("Error al añadir producto:", error);
+            throw new Error("Error al añadir producto: " + error.message);
         }
     }
 
@@ -52,14 +50,16 @@ class ProductManager {
             await this.init();
             const productIndex = this.products.findIndex((p) => p.id === id);
             if (productIndex !== -1) {
+                if (updatedFields.id || updatedFields.code && this.isCodeDuplicate(updatedFields.code)) {
+                    throw new Error("El código del producto ya está en uso");
+                }
                 this.products[productIndex] = { ...this.products[productIndex], ...updatedFields };
                 await this.saveToFile();
-                console.log("Producto actualizado correctamente");
             } else {
-                console.log("Error: Producto no encontrado");
+                throw new Error("Producto no encontrado");
             }
         } catch (error) {
-            console.error("Error al actualizar producto:", error);
+            throw new Error("Error al actualizar producto: " + error.message);
         }
     }
 
@@ -70,12 +70,11 @@ class ProductManager {
             if (productIndex !== -1) {
                 this.products.splice(productIndex, 1);
                 await this.saveToFile();
-                console.log("Producto eliminado correctamente");
             } else {
-                console.log("Error: Producto no encontrado");
+                throw new Error("Producto no encontrado");
             }
         } catch (error) {
-            console.error("Error al eliminar producto:", error);
+            throw new Error("Error al eliminar producto: " + error.message);
         }
     }
 
@@ -88,7 +87,7 @@ class ProductManager {
         if (product) {
             return product;
         } else {
-            console.log("Error: Producto no encontrado");
+            throw new Error("Producto no encontrado");
         }
     }
 
@@ -108,44 +107,5 @@ class ProductManager {
     }
 }
 
-const productManager = new ProductManager();
-
-(async () => {
-    await productManager.addProduct({
-        title: "notebook",
-        description: "Descripción notebook",
-        price: 1000.00,
-        thumbnail: 'ruta/imagen1.jpg',
-        code: 'P001',
-        stock: 2
-    });
-
-    await productManager.addProduct({
-        title: "monitor",
-        description: "Descripción de monitor",
-        price: 20.00,
-        thumbnail: 'ruta/imagen2.jpg',
-        code: 'P002',
-        stock: 4
-    });
-
-    await productManager.addProduct({
-        title: "mouse",
-        description: "Descripción de mouse",
-        price: '',
-        thumbnail: 'ruta/imagen3.jpg',
-        code: 'P004',
-        stock: 4
-    });
-
-    await productManager.updateProduct(2, {
-        description: "descripcion actualizada",
-        price: 3333333.3,
-        stock: 1
-    });
-
-    await productManager.deleteProduct(1);
-
-    const productos = productManager.getProducts();
-    console.log(productos);
-})();
+const productManager = new ProductManager('productos.json');
+module.exports = productManager;

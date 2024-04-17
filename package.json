@@ -1,12 +1,12 @@
 {
   "name": "desafiosbacken50153",
   "version": "1.0.0",
-  "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "node --watch desafiosbacken50153/app.js"
+    "start": "node --watch desafiosbacken50153/src/app.js"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "description": ""
 }
